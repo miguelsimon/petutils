@@ -6,6 +6,7 @@ This is an attempt to nail down the things @mmkekic and @paolafer and me have be
     * [Characterizing inputs and outputs](characterizing-inputs-and-outputs)
     * [Generating random events to evaluate the models](generating-random-events-to-evaluate-the-models)
     * [Pipeline](#pipeline)
+    * [Notebook examples](#notebook-examples)
 * [Usage](#usage)
   * [Data](#data)
   * [Visualizing MC simulations](#visualizing-mc-simulations)
@@ -80,6 +81,11 @@ Implementing the interfaces defined here fully characterizes an executable exper
 * different algorithms can be worked on independently and then compared objectively by plugging them into the pipeline
 
 Careful use of protocols and generic types gives us the speed of python with the readability of C++ ;)
+
+### Notebook examples
+
+* [Trivial example to illustrate the approach](https://nbviewer.jupyter.org/github/miguelsimon/petutils/blob/master/trivial_experiment.ipynb)
+* [Simplified example using petalo data](https://nbviewer.jupyter.org/github/miguelsimon/petutils/blob/master/simplified.ipynb)
 
 # Usage
 
