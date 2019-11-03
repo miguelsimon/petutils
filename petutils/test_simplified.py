@@ -3,7 +3,15 @@ import unittest
 import numpy as np
 from pandas import DataFrame
 
-from petutils.simplified import XT, EMDLoss, RndMarginalPredictor, Simulator, X, Y
+from petutils.simplified import (
+    XT,
+    BarycenterPredictor,
+    EMDLoss,
+    RndMarginalPredictor,
+    Simulator,
+    X,
+    Y,
+)
 
 positions = DataFrame({"sensor_id": [0], "x": [10.0], "y": [10.0], "z": [10.0]})
 
@@ -35,3 +43,16 @@ class Test(unittest.TestCase):
 
         x_neq = X(np.array([1.0, 1, 0.0]))
         self.assertAlmostEqual(loss.loss(xt, x_neq), 1)
+
+    def test_rnd_marginal_predictor(self):
+        pred = RndMarginalPredictor(hits)
+        y = Y(ext_waveforms)
+        x = pred.predict(y)
+        print(x)
+
+    def test_barycenter_predictor(self):
+        pred = BarycenterPredictor()
+        y = Y(ext_waveforms)
+        x = pred.predict(y)
+
+        self.assertTrue(np.allclose(x.xyz, [10, 10, 10]))
