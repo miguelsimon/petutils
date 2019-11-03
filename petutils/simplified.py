@@ -7,7 +7,6 @@ where we ignore the time dimension and restrict our density predictions to a sin
 import random
 from typing import Dict, Tuple
 
-import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.spatial
@@ -55,11 +54,8 @@ class Y:
 
 
 class Simulator:
-    def __init__(self, f: h5py.File):
-        self.positions = DataFrame(f["MC"]["sensor_positions"][:])
-
-        hits = DataFrame(f["MC"]["hits"][:])
-        waveforms = DataFrame(f["MC"]["waveforms"][:])
+    def __init__(self, positions: DataFrame, hits: DataFrame, waveforms: DataFrame):
+        self.positions = positions
 
         self.hits: Dict[int, DataFrame] = {}
         for event_id, df in hits.groupby("event_id"):
@@ -129,8 +125,7 @@ class RndMarginalPredictor:
     conditioned on Y in any way
     """
 
-    def __init__(self, f: h5py.File):
-        hits = DataFrame(f["MC"]["hits"][:])
+    def __init__(self, hits: DataFrame):
         self.positions = np.array(hits[["x", "y", "x"]])
 
     def predict(self, _y: Y) -> X:
@@ -158,8 +153,8 @@ class BarycenterPredictor:
 
 
 class Plotter:
-    def __init__(self, f: h5py.File):
-        self.positions = DataFrame(f["MC"]["sensor_positions"][:])
+    def __init__(self, positions: DataFrame):
+        self.positions = positions
 
     def plot_sample(self, xt: XT, x: X, y: Y):
         """
