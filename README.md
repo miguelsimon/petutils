@@ -1,3 +1,5 @@
+Build: [![CircleCI](https://circleci.com/gh/miguelsimon/petutils.svg?style=svg)](https://circleci.com/gh/miguelsimon/petutils)
+
 This is an attempt to nail down the things @mmkekic and @paolafer and me have been talking about, writing it down should also serve to bring to light any conceptual misunderstandings I might have about the whole endeavour before I go too far down a silly path haha.
 
 * [Conceptual overview](#conceptual-overview)
