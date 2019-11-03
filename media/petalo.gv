@@ -1,0 +1,80 @@
+digraph {
+	rankdir="TD";
+
+	signal [
+		shape=plaintext
+		label=<
+		<table border='0'>
+			<tr><td>
+				signal
+			</td></tr>
+			<tr><td>
+				<table border='0' cellborder='1'>
+					<tr><td>timestep</td><td>sensor_counts</td></tr>
+					<tr><td>3</td><td><b>[0,3,1,0]</b></td></tr>
+					<tr><td>4</td><td><b>[0,2,2,0]</b></td></tr>
+					<tr><td>5</td><td><b>[0,1,0,0]</b></td></tr>
+				</table>
+		</td></tr>
+	</table>
+	>];
+
+  scintillations [
+    shape=plaintext
+    label=<
+		<table border='0'>
+			<tr><td>
+				scintillations
+			</td></tr>
+			<tr><td>
+		    <table border='0' cellborder='1'>
+			    <tr><td>t</td><td>x</td><td>y</td><td>z</td></tr>
+			    <tr><td>101.1</td><td>77</td><td>102</td><td>9</td></tr>
+			    <tr><td>103.4</td><td>-20</td><td>12</td><td>32</td></tr>
+			   </table>
+			</td></tr>
+		</table>
+  >];
+
+	decays [
+		shape=plaintext
+		label=<
+		<table border='0'>
+			<tr><td>
+				beta decay events
+			</td></tr>
+			<tr><td>
+				<table border='1' cellborder='1'>
+		    <tr><td>t</td><td>x</td><td>y</td><td>z</td><td>theta</td><td>phi</td></tr>
+		    <tr><td>98.05</td><td>0.2</td><td>1</td><td>-3</td><td>3.3</td><td>1.9</td></tr>
+				</table>
+			</td></tr>
+		</table>
+	>];
+
+	density [
+    shape=plaintext
+    label=<
+		<table border='0'>
+			<tr><td>
+				radioisotope density
+			</td></tr>
+			<tr><td>
+		    <table border='0' cellborder='1'>
+		    <tr><td>voxel id</td><td>x</td><td>y</td><td>z</td><td>decays/sec</td></tr>
+		    <tr><td>1</td><td>0.4</td><td>20</td><td>13</td><td>10.4</td></tr>
+		    <tr><td>2</td><td>1.4</td><td>2</td><td>3</td><td>1.01</td></tr>
+		    <tr><td>3</td><td>-3.2</td><td>0.01</td><td>-20</td><td>0.00</td></tr>
+		    </table>
+			</td></tr>
+		</table>
+  >];
+
+	signal -> find_scintillations;
+	find_scintillations -> scintillations;
+  scintillations -> coincidence_finder;
+	coincidence_finder -> decays;
+	decays -> calculate_density;
+  calculate_density -> density;
+
+}

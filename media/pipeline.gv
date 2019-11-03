@@ -1,0 +1,22 @@
+digraph {
+	rankdir="LR";
+
+  simulator;
+
+  Y [shape=box];
+  X_t [shape=box];
+  X [shape=box];
+
+  score [shape=box];
+
+  simulator -> Y;
+  simulator -> X_t;
+
+  Y -> algorithm;
+  algorithm -> X;
+
+  X_t -> calculate_loss;
+  X -> calculate_loss;
+
+  calculate_loss -> score;
+}

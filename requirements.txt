@@ -1,0 +1,11 @@
+pandas
+h5py
+scipy
+jupyter
+matplotlib
+autograd
+cvxopt
+mypy
+flake8
+isort
+black

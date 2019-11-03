@@ -1,0 +1,8 @@
+deps
+env
+env_ok
+media/*.gv.png
+.ipynb_checkpoints
+.mypy_cache
+__pycache__
+full_ring_iradius165mm_depth3cm_pitch7mm_new_h5.001.pet.h5
