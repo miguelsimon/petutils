@@ -89,6 +89,8 @@ Careful use of protocols and generic types gives us the speed of python with the
 
 # Usage
 
+**Requires python >= 3.7**
+
 * `make env_ok` sets up the python virtualenv with all dependencies
 * `make check` runs [mypy](http://mypy-lang.org/) typechecking, flake8 checks, black and isort formatting checks
 * `make test` runs unit tests
