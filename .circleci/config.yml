@@ -7,4 +7,5 @@ jobs:
       - checkout
       - run: ls
       - run: python -m venv env
+      - run: env/bin/pip install -r requirements.txt
       - run: env/bin/python -m unittest discover petutils -p "*.py"
