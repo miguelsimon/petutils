@@ -8,4 +8,8 @@ jobs:
       - run: ls
       - run: python -m venv env
       - run: env/bin/pip install -r requirements.txt
+      - run: env/bin/python -m mypy --check-untyped-defs --ignore-missing-imports petutils
+      - run: env/bin/python -m flake8 --select F petutils
+      - run: env/bin/isort  -sp .isort.cfg  --check petutils/*.py
+      - run: env/bin/black --check petutils/*.py
       - run: env/bin/python -m unittest discover petutils -p "*.py"
