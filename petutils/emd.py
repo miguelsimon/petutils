@@ -1,6 +1,31 @@
+from typing import NamedTuple
+
 import numpy as np
 import scipy.optimize
 import scipy.spatial
+from numpy import ndarray
+
+
+class LinProg(NamedTuple):
+    """
+    Follows convention in https://docs.scipy.org/doc/scipy-1.1.0/reference/generated/scipy.optimize.linprog.html#scipy.optimize.linprog
+    """
+
+    c: ndarray
+    A_ub: ndarray
+    b_ub: ndarray
+    A_eq: ndarray
+    b_eq: ndarray
+
+    def solve_scipy(self):
+        return scipy.optimize.linprog(
+            c=self.c,
+            A_eq=self.A_eq,
+            b_eq=self.b_eq,
+            A_ub=self.A_ub,
+            b_ub=self.b_ub,
+            bounds=None,
+        )
 
 
 def emd(x, y, xy_dist):
@@ -32,36 +57,60 @@ def emd(x, y, xy_dist):
 
     """
 
+    linprog = to_linprog(x, y, xy_dist)
+    res = linprog.solve_scipy()
+    assert res["success"]
+    return res["fun"], res["x"].reshape(xy_dist.shape)
+
+
+def to_linprog(x, y, xy_dist) -> LinProg:
+    """
+
+    Parameters
+    ----------
+
+    x : ndarray
+        1 - dimensional array of weights
+    y : ndarray
+        1 - dimensional array of weights
+    xy_dist : ndarray
+        2 - dimensional array containing distances between x and y density coordinates
+
+    Returns
+    -------
+
+    LinProg
+
+    """
+
     assert np.allclose(x.sum(), y.sum())
+    assert xy_dist.shape[0] == x.shape[0]
+    assert xy_dist.shape[1] == y.shape[0]
+
     x_dim = x.shape[0]
     y_dim = y.shape[0]
 
-    flat_dim = x_dim * y_dim
+    c = xy_dist.flatten()
 
-    A_eq = np.zeros((x_dim + y_dim, flat_dim))
+    A_eq = []
+    b_eq = []
 
-    # rows must emit earth equal to x
     for i in range(x_dim):
         constraint = np.zeros(xy_dist.shape)
         constraint[i] = 1.0
-        A_eq[i] = constraint.flatten()
+        A_eq.append(constraint.flatten())
+        b_eq.append(x[i])
 
-    # columns must recieve earth equal to y
     for i in range(y_dim):
         constraint = np.zeros(xy_dist.shape)
         constraint[:, i] = 1.0
-        A_eq[i + x_dim] = constraint.flatten()
+        A_eq.append(constraint.flatten())
+        b_eq.append(y[i])
 
-    c = xy_dist.flatten()
+    A_ub = np.diag(-np.ones(x_dim * y_dim))
+    b_ub = np.zeros(x_dim * y_dim)
 
-    b_eq = np.hstack([x, y])
-    bounds = [(0, None)]
-
-    res = scipy.optimize.linprog(c=c, A_eq=A_eq, b_eq=b_eq, bounds=bounds)
-
-    assert res["success"]
-
-    return res["fun"], res["x"].reshape(xy_dist.shape)
+    return LinProg(c=c, A_ub=A_ub, b_ub=b_ub, A_eq=np.array(A_eq), b_eq=np.array(b_eq))
 
 
 def sparse_emd(x, x_points, y, y_points, p=2):

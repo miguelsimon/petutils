@@ -15,6 +15,52 @@ class Test(unittest.TestCase):
 
         self.assertTrue(np.allclose(dist, 1))
 
+    def test_hist(self):
+
+        # fmt: off
+        xy_dist = np.array([
+            [0, 1, 2, 3],
+            [1, 0, 1, 2],
+            [2, 1, 0, 1],
+            [3, 2, 1, 0],
+        ])
+        # fmt: on
+
+        x = np.array([1, 0, 0, 0])
+        y = np.array([0, 0, 0, 1])
+        dist, _ = emd(x, y, xy_dist)
+        self.assertTrue(np.allclose(dist, 3))
+
+        x = np.array([1, 0, 0, 0])
+        y = np.array([0, 0, 1, 0])
+        dist, _ = emd(x, y, xy_dist)
+        self.assertTrue(np.allclose(dist, 2))
+
+    def test_asymmetric(self):
+
+        # fmt: off
+        xy_dist = np.array([
+            [1, 2],
+            [3, 4],
+            [5, 6],
+        ])
+        # fmt: on
+
+        x = np.array([1, 0, 0])
+        y = np.array([0, 1])
+        dist, _ = emd(x, y, xy_dist)
+        self.assertTrue(np.allclose(dist, 2))
+
+        x = np.array([0, 1, 0])
+        y = np.array([1, 0])
+        dist, _ = emd(x, y, xy_dist)
+        self.assertTrue(np.allclose(dist, 3))
+
+        x = np.array([0, 0, 1])
+        y = np.array([0, 1])
+        dist, _ = emd(x, y, xy_dist)
+        self.assertTrue(np.allclose(dist, 6))
+
     def test_2d_emd(self):
         x = np.array([1.0, 0.0])
         y = np.array([0.0, 1.0])

@@ -1,6 +1,7 @@
 pandas
 h5py
 scipy
+cvxopt
 jupyter
 matplotlib
 mypy
