@@ -9,10 +9,11 @@ from typing import Dict, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.spatial
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from numpy import ndarray
 from pandas import DataFrame
+
+from petutils.emd import sparse_emd
 
 
 class XT:
@@ -99,19 +100,17 @@ class EMDLoss:
         is buggy or because I hit a scipy.optimize.linprog bug.
         """
 
-        xt_energy = np.array(xt.df["energy"])
+        xt_energy = np.array(xt.df["energy"]).astype("double")
         xt_density = xt_energy / np.sum(xt_energy)
 
         xt_points = np.array(xt.df[["x", "y", "z"]])
 
         x_points = np.array([x.xyz])
 
-        xy_dist = scipy.spatial.distance_matrix(xt_points, x_points, 2)
-        xy_dist = xy_dist.transpose()[0]
+        x_density = np.array([1.0], dtype="double")
 
-        emd = np.sum(xy_dist * xt_density)
-
-        return emd
+        loss, _ = sparse_emd(xt_density, xt_points, x_density, x_points)
+        return loss
 
 
 class DumbPredictor:
