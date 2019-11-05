@@ -52,9 +52,6 @@ def emd(x, y, xy_dist):
 
     This implementation doesn't exploit the sparsity in the A_eq matrix.
 
-    TODO: there's something wrong with this implementation, it passes basic
-    tests but fails sometimes with real data, need to debug.
-
     """
 
     linprog = to_linprog(x, y, xy_dist)
@@ -81,9 +78,18 @@ def to_linprog(x, y, xy_dist) -> LinProg:
 
     LinProg
 
+    This was sometimes flaking out when called with single-precision matrices
+    because of numerical instability in the scipy _presolve step when eliminating
+    redundant constraints, so ensure sufficient precision
+
+    TODO: use sparse A_eq, A_ub matrices
+
     """
 
-    assert np.allclose(x.sum(), y.sum())
+    # constant used in scipy.optimize._remove_redundancy
+    tol = 1e-8
+
+    assert np.abs(x.sum() - y.sum()) < tol, "x and y must be close to avoid instability"
     assert xy_dist.shape[0] == x.shape[0]
     assert xy_dist.shape[1] == y.shape[0]
 
