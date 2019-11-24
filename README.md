@@ -177,6 +177,7 @@ Running checks, outputs dumped in /integration-tests
 
 running check_NEW_fullKr.sh ... FAILED
 running check_PET_full_body.sh ... ok
+running check_PETit_ring.sh ... ok
 running check_Petit.sh ... ok
 running check_nexus_example1.sh ... ok
 ```
