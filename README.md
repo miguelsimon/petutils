@@ -13,6 +13,7 @@ This is an attempt to nail down the things @mmkekic and @paolafer and me have be
   * [Data](#data)
   * [Visualizing MC simulations](#visualizing-mc-simulations)
   * [Dockerized nexus](#dockerized-nexus)
+    * [Dockerized integration tests](#dockerized-integration-tests)
 
 # Conceptual overview
 
@@ -115,7 +116,7 @@ The data file isn't in the repo so has to be fetched separately; I use `full_rin
 To plot a random simulation event from an hdf5 file you can use this command (after running `make env_ok` of course):
 
 ```
-env/bin/python -m petutils.plotter plot_rnd --hdf5_file ./full_ring_iradius165mm_depth3cm_pitch7mm_new_h5.001.pet.h5
+env/bin/python -m petutils.utils plot_rnd --hdf5_file ./full_ring_iradius165mm_depth3cm_pitch7mm_new_h5.001.pet.h5
 ```
 
 You should get a rudimentary but useful matplotlib-based visualization like this:
@@ -126,27 +127,66 @@ You should get a rudimentary but useful matplotlib-based visualization like this
 
 The build process for nexus is well documented [here](https://next.ific.uv.es:8888/nextsw/nexus/wikis/home), I dockerized it.
 
+You'll need docker, easy to install on [ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04), [docker wants to harvest your personal info for the OS X download](https://github.com/docker/docker.github.io/issues/6910) but you can find a direct download link here: [https://download.docker.com/mac/stable/Docker.dmg](https://download.docker.com/mac/stable/Docker.dmg).
+
 This makes it easy to plug nexus into a continuous integration system if we have unit tests to validate its behaviour.
 
-* Get dependencies:
-  You'll need read access to the repos.
-  `make download_deps`
-* Build the nexus docker image:
-  `make build-nexus-image`
+* get GATE
+  `git clone git@next.ific.uv.es:nextsw/GATE.git`
+* get PETALO branch of nexus
+  `git clone -b petalo git@next.ific.uv.es:nextsw/nexus.git`
+* Build the `gate` docker image, containing all dependencies needed for nexus:
+  `make build-gate-image`
 
-Now you can run nexus in there, eg. run [the first example in the user's guide](https://next.ific.uv.es:8888/nextsw/nexus/wikis/User-guide#getting-started-running-a-simple-example) by launching the docker container:
+Now you can run nexus in there by mounting it and eg. building it inside the `gate` docker container:
 
-`docker run -it --rm nexus`
+`docker run -it --rm -v "$(pwd)"/nexus:/nexus gate`
 
 and then:
 
+```
+cd /nexus
+scons
+```
+
+You should be able to run the example now:
+
 `./nexus -b -n 100 macros/nexus_example1.init.mac`
 
-You can connect to a built-in x session exposed via vnc so we can use the geant4 gui:
-* port: 5900
-* password: 1234
+### Dockerized integration tests
 
-Use a vnc client to connect to it, on OS X for example this should work from the terminal
+There's been discussion about [adding catch2-based tests to nexus](https://next.ific.uv.es:8888/miguelsimon/nexus/compare/petalo...petalo-tests) and while this is a good idea for unit tests, integration tests require complex analysis that is easier to do externally in python. The `gate` docker image installs the petutils package, so we can express our integration tests in python.
+
+As an illustration, the [petalo-integration-tests/check_PETit_ring.sh](petalo-integration-tests/check_PETit_ring.sh) file calls a check defined in [petutils/utils.py](petutils/utils.py) that checks the hdf5 file for expected keys like waveforms, tof_waveforms etc; we can add arbitrarily complex checks in this manner, using convenience of the python pandas, hdf5, scipy etc. libs.
+
+[petalo-integration-tests](petalo-integration-tests) contains integration tests to run against the nexus install, expressed as bash scripts; `run_all.sh` calls all of them in sequence.
+
+They can be mounted in the docker container and launched with this unwieldy command, and are easy to run within a continuous integration pipeline:
+
 ```
-open vnc://localhost:5900
+docker run -it --rm \
+  -v "$(pwd)"/nexus:/nexus \
+  -v "$(pwd)":/petutils \
+  -e NEXUS=/nexus \
+  -w /petutils/petalo-integration-tests \
+  gate \
+  bash run_all.sh
 ```
+
+You should see output like this:
+```
+Running checks, outputs dumped in /integration-tests
+
+running check_NEW_fullKr.sh ... FAILED
+running check_PET_full_body.sh ... ok
+running check_PETit_ring.sh ... ok
+running check_Petit.sh ... ok
+running check_nexus_example1.sh ... ok
+```
+
+Based on this initial testing, I think some macros are out of date: the command
+```
+/nexus/persistency/hdf5 true
+```
+
+seems to be obsolete, but is still present in some macros, causing them to break.

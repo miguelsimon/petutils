@@ -1,0 +1,24 @@
+FROM nexus-deps
+
+# install GATE git@next.ific.uv.es:nextsw/GATE.git
+
+COPY ./GATE /GATE
+
+WORKDIR /GATE
+RUN make
+
+ENV GATE_DIR=/GATE
+ENV LD_LIBRARY_PATH="/GATE/lib:${LD_LIBRARY_PATH}"
+
+# pcm files need to be next to .so files see https://github.com/lcfiplus/LCFIPlus/issues/17
+RUN cp /GATE/emodel/GATECint_rdict.pcm /GATE/lib/
+RUN cp /GATE/IO/GATEIOCint_rdict.pcm /GATE/lib/
+
+# install petutils
+
+RUN apt-get update && apt-get install -y python3-pip
+
+COPY . /petutils
+RUN pip3 install -e /petutils
+
+WORKDIR /

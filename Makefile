@@ -12,40 +12,16 @@ media/%.gv.svg: media/%.gv
 media/%.gv.png: media/%.gv
 	dot -Tpng -o $@ $<
 
-.PHONY: download_deps
-download-deps:
-	rm -rf deps
+GATE:
+	git clone git@next.ific.uv.es:nextsw/GATE.git
 
-	mkdir deps
+.PHONY: build-deps-image
+build-deps-image:
+	docker build -t nexus-deps -f DepsDockerfile .
 
-	curl -Lo deps/geant4.10.05.p01.tar.gz \
-		http://geant4.cern.ch/support/source/geant4.10.05.p01.tar.gz
-	cd deps && tar zxvf geant4.10.05.p01.tar.gz
-	rm deps/geant4.10.05.p01.tar.gz
-
-	curl -o deps/hdf5-1.10.5.tar.gz \
-		https://support.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.10.5.tar.gz
-	cd deps && tar zxvf hdf5-1.10.5.tar.gz
-	rm deps/hdf5-1.10.5.tar.gz
-
-	curl -o deps/gsl-2.6.tar.gz \
-		http://ftp.rediris.es/mirror/GNU/gsl/gsl-2.6.tar.gz
-	cd deps && tar zxvf gsl-2.6.tar.gz
-	rm deps/gsl-2.6.tar.gz
-
-	curl -o deps/root_v6.18.04.Linux-ubuntu18-x86_64-gcc7.4.tar.gz \
-		https://root.cern/download/root_v6.18.04.Linux-ubuntu18-x86_64-gcc7.4.tar.gz
-	cd deps && tar zxvf root_v6.18.04.Linux-ubuntu18-x86_64-gcc7.4.tar.gz
-	rm deps/root_v6.18.04.Linux-ubuntu18-x86_64-gcc7.4.tar.gz
-
-	git clone git@next.ific.uv.es:nextsw/nexus.git deps/nexus
-	cd deps/nexus && git checkout petalo
-
-	git clone git@next.ific.uv.es:nextsw/GATE.git deps/GATE
-
-.PHONY: build_nexus_image
-build-nexus-image:
-	docker build -t nexus .
+.PHONY: build-gate-image
+build-gate-image: build-deps-image GATE
+	docker build -t gate -f GATEDockerfile .
 
 .PHONY: fmt
 fmt: env_ok
@@ -69,10 +45,16 @@ check: env_ok
 	env/bin/isort  -sp .isort.cfg  --check $(py_files)
 	env/bin/black --check $(py_files)
 
+.PHONY: module_test
+module_test:
+	rm -rf test_env
+	python3 -m venv test_env
+	test_env/bin/pip install -e .
+
 .PHONY: run_notebook
 run_notebook: env_ok
 	env/bin/jupyter notebook
 
 .PHONY: clean
 clean:
-	rm -rf env_ok env deps
+	rm -rf env_ok env test_env

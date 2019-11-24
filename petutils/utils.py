@@ -1,5 +1,5 @@
 """
-Plot petalo sensors, hits and activated sensors.
+Miscellaneous petalo-related utils
 """
 
 import argparse
@@ -76,10 +76,28 @@ class Plotter:
         plt.show()
 
 
+def check_file(filename: str) -> bool:
+    data: Dict[str, DataFrame] = {}
+    with h5py.File(filename, "r") as f:
+        for key in [
+            "configuration",
+            "hits",
+            "particles",
+            "sensor_positions",
+            "tof_waveforms",
+            "waveforms",
+        ]:
+            data[key] = DataFrame(f["MC"][key][:])
+
+    return True
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("command", choices=["plot_rnd"], help="command to execute")
+    parser.add_argument(
+        "command", choices=["plot_rnd", "check_file"], help="command to execute"
+    )
 
     parser.add_argument(
         "--hdf5_file",
@@ -89,5 +107,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    plotter = Plotter(args.hdf5_file)
-    plotter.plot_random_event()
+    if args.command == "check_file":
+        assert check_file(args.hdf5_file)
+    elif args.command == "plot_rnd":
+        plotter = Plotter(args.hdf5_file)
+        plotter.plot_random_event()
+    else:
+        raise Exception
