@@ -14,4 +14,11 @@ ENV LD_LIBRARY_PATH="/GATE/lib:${LD_LIBRARY_PATH}"
 RUN cp /GATE/emodel/GATECint_rdict.pcm /GATE/lib/
 RUN cp /GATE/IO/GATEIOCint_rdict.pcm /GATE/lib/
 
+# install petutils
+
+RUN apt-get update && apt-get install -y python3-pip
+
+COPY . /petutils
+RUN pip3 install -e /petutils
+
 WORKDIR /

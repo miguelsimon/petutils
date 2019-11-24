@@ -116,7 +116,7 @@ The data file isn't in the repo so has to be fetched separately; I use `full_rin
 To plot a random simulation event from an hdf5 file you can use this command (after running `make env_ok` of course):
 
 ```
-env/bin/python -m petutils.plotter plot_rnd --hdf5_file ./full_ring_iradius165mm_depth3cm_pitch7mm_new_h5.001.pet.h5
+env/bin/python -m petutils.utils plot_rnd --hdf5_file ./full_ring_iradius165mm_depth3cm_pitch7mm_new_h5.001.pet.h5
 ```
 
 You should get a rudimentary but useful matplotlib-based visualization like this:
@@ -155,20 +155,22 @@ You should be able to run the example now:
 
 ### Dockerized integration tests
 
-My current thinking is that integration tests against nexus can be run in the following framework; there's been discussion about [adding catch2-based tests to nexus](https://next.ific.uv.es:8888/miguelsimon/nexus/compare/petalo...petalo-tests) and while this is a good idea for unit tests, integration tests require complex analysis that is easier to do externally in python.
+There's been discussion about [adding catch2-based tests to nexus](https://next.ific.uv.es:8888/miguelsimon/nexus/compare/petalo...petalo-tests) and while this is a good idea for unit tests, integration tests require complex analysis that is easier to do externally in python. The `gate` docker image installs the petutils package, so we can express our integration tests in python.
 
-[petalo-integration-tests](petalo-integration-tests) contains integration tests to run against the nexus install, expressed as bash scripts (we can easily add python code to actually check the simulation outputs).
+As an illustration, the [petalo-integration-tests/check_PETit_ring.sh](petalo-integration-tests/check_PETit_ring.sh) file calls a check defined in [petutils/utils.py](petutils/utils.py) that checks the hdf5 file for expected keys like waveforms, tof_waveforms etc; we can add arbitrarily complex checks in this manner, using convenience of the python pandas, hdf5, scipy etc. libs.
+
+[petalo-integration-tests](petalo-integration-tests) contains integration tests to run against the nexus install, expressed as bash scripts; `run_all.sh` calls all of them in sequence.
 
 They can be mounted in the docker container and launched with this unwieldy command, and are easy to run within a continuous integration pipeline:
 
 ```
 docker run -it --rm \
   -v "$(pwd)"/nexus:/nexus \
-  -v "$(pwd)"/petalo-integration-tests:/petalo-integration-tests \
+  -v "$(pwd)":/petutils \
   -e NEXUS=/nexus \
-  -w /petalo-integration-tests \
+  -w /petutils/petalo-integration-tests \
   gate \
-  bash /petalo-integration-tests/run_all.sh
+  bash run_all.sh
 ```
 
 You should see output like this:
@@ -181,8 +183,6 @@ running check_PETit_ring.sh ... ok
 running check_Petit.sh ... ok
 running check_nexus_example1.sh ... ok
 ```
-
-Right now these scripts just check the exit status of the command; they should process the simulation outputs and check statistics of the runs.
 
 Based on this initial testing, I think some macros are out of date: the command
 ```
