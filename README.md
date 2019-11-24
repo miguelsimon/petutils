@@ -127,6 +127,8 @@ You should get a rudimentary but useful matplotlib-based visualization like this
 
 The build process for nexus is well documented [here](https://next.ific.uv.es:8888/nextsw/nexus/wikis/home), I dockerized it.
 
+You'll need docker, easy to install on [ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04), [docker wants to harvest your personal info for the OS X download](https://github.com/docker/docker.github.io/issues/6910) but you can find a direct download link here: [https://download.docker.com/mac/stable/Docker.dmg](https://download.docker.com/mac/stable/Docker.dmg).
+
 This makes it easy to plug nexus into a continuous integration system if we have unit tests to validate its behaviour.
 
 * get GATE
@@ -153,6 +155,8 @@ You should be able to run the example now:
 
 ### Dockerized integration tests
 
+My current thinking is that integration tests against nexus can be run in the following framework; there's been discussion about [adding catch2-based tests to nexus](https://next.ific.uv.es:8888/miguelsimon/nexus/compare/petalo...petalo-tests) and while this is a good idea for unit tests, integration tests require complex analysis that is easier to do externally in python.
+
 [petalo-integration-tests](petalo-integration-tests) contains integration tests to run against the nexus install, expressed as bash scripts (we can easily add python code to actually check the simulation outputs).
 
 They can be mounted in the docker container and launched with this unwieldy command, and are easy to run within a continuous integration pipeline:
@@ -172,8 +176,16 @@ You should see output like this:
 Running checks, outputs dumped in /integration-tests
 
 running check_NEW_fullKr.sh ... FAILED
+running check_PET_full_body.sh ... ok
 running check_Petit.sh ... ok
 running check_nexus_example1.sh ... ok
 ```
 
 Right now these scripts just check the exit status of the command; they should process the simulation outputs and check statistics of the runs.
+
+Based on this initial testing, I think some macros are out of date: the command
+```
+/nexus/persistency/hdf5 true
+```
+
+seems to be obsolete, but is still present in some macros, causing them to break.
