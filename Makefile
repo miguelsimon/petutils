@@ -45,10 +45,16 @@ check: env_ok
 	env/bin/isort  -sp .isort.cfg  --check $(py_files)
 	env/bin/black --check $(py_files)
 
+.PHONY: module_test
+module_test:
+	rm -rf test_env
+	python3 -m venv test_env
+	test_env/bin/pip install -e .
+
 .PHONY: run_notebook
 run_notebook: env_ok
 	env/bin/jupyter notebook
 
 .PHONY: clean
 clean:
-	rm -rf env_ok env deps
+	rm -rf env_ok env test_env

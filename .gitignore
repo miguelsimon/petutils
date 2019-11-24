@@ -1,6 +1,7 @@
-deps
 env
 env_ok
+test_env
+petutils.egg-info
 GATE
 nexus
 media/*.gv.png
